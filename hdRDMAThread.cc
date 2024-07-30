@@ -237,7 +237,7 @@ void hdRDMAThread::PostWR( int id )
 	sge.lkey = hdrdma->mr->lkey;
 	auto ret = ibv_post_recv( qp, &wr, &bad_wr);
 	if( ret != 0 ){
-		cout << "ERROR: ibv_post_recv returned non zero value (" << ret << ")" << endl;
+		cout << "ERROR: ibv_post_recv returned non zero value (" << ret << "-" << strerror(ret) << ")" << endl;
 	}
 }
 
@@ -365,7 +365,7 @@ int hdRDMAThread::SetToRTS(void)
 		struct ibv_qp_attr  qp_attr;
 		bzero( &qp_attr, sizeof(qp_attr) );		
 		qp_attr.qp_state           = IBV_QPS_RTR,
-		qp_attr.path_mtu           = IB_MTU,
+		qp_attr.path_mtu           = IBV_MTU_512,
 		qp_attr.dest_qp_num        = remote_qpinfo.qp_num,
 		qp_attr.rq_psn             = 0,
 		qp_attr.max_dest_rd_atomic = 1,

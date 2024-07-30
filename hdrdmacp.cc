@@ -49,7 +49,10 @@ int main(int narg, char *argv[])
 	// This will return right away so one must check the GetNpeers() method
 	// to see when a connection is made.
 	if( HDRDMA_IS_SERVER ){
+		cout << "Running in server mode" << endl;
+		cout << "Running hdrdma.Listen ..." << endl; 
 		hdrdma.Listen( HDRDMA_LOCAL_PORT );
+		cout << "hdrdma.Listen done" << endl; 
 
 		// We want to report 10sec, 1min, and 5min averages
 		auto t_last_10sec = steady_clock::now();
@@ -61,7 +64,9 @@ int main(int narg, char *argv[])
 
 		while( true ){
 			
+			cout << "Running hdrdma.Poll ..." << endl; 
 			hdrdma.Poll();
+			cout << "hdrdma.Poll done" << endl; 
 			
 			auto now = steady_clock::now();
 			auto duration_10sec = duration_cast<std::chrono::seconds>(now - t_last_10sec);
@@ -72,25 +77,25 @@ int main(int narg, char *argv[])
 			auto delta_t_5min   = duration_5min.count();
 
 			if( delta_t_10sec >= 10.0 ){
-				double GB_received = (BYTES_RECEIVED_TOT - last_bytes_received_10sec)/1000000000;
-				double rate = GB_received/delta_t_10sec;
-				cout << "=== [10 sec avg.] " << rate << " GB/s  --  " << (double)BYTES_RECEIVED_TOT/1.0E12 << " TB total received" << endl;
+				double KB_received = (BYTES_RECEIVED_TOT - last_bytes_received_10sec)/1000;
+				double rate = KB_received/delta_t_10sec;
+				cout << "=== [10 sec avg.] " << rate << " KB/s  --  " << (double)BYTES_RECEIVED_TOT/1.0E12 << " TB total received" << endl;
 				t_last_10sec = now;
 				last_bytes_received_10sec = BYTES_RECEIVED_TOT;
 			}
 
 			if( delta_t_1min >= 60.0 ){
-				double GB_received = (BYTES_RECEIVED_TOT - last_bytes_received_1min)/1000000000;
-				double rate = GB_received/delta_t_1min;
-				cout << "=== [ 1 min avg.] " << rate << " GB/s" << endl;
+				double KB_received = (BYTES_RECEIVED_TOT - last_bytes_received_1min)/1000;
+				double rate = KB_received/delta_t_1min;
+				cout << "=== [ 1 min avg.] " << rate << " KB/s" << endl;
 				t_last_1min = now;
 				last_bytes_received_1min = BYTES_RECEIVED_TOT;
 			}
 
 			if( delta_t_5min >= 300.0 ){
-				double GB_received = (BYTES_RECEIVED_TOT - last_bytes_received_5min)/1000000000;
-				double rate = GB_received/delta_t_5min;
-				cout << "=== [ 5 min avg.] " << rate << " GB/s" << endl;
+				double KB_received = (BYTES_RECEIVED_TOT - last_bytes_received_5min)/1000;
+				double rate = KB_received/delta_t_5min;
+				cout << "=== [ 5 min avg.] " << rate << " KB/s" << endl;
 				t_last_5min = now;
 				last_bytes_received_5min = BYTES_RECEIVED_TOT;
 			}
@@ -99,7 +104,9 @@ int main(int narg, char *argv[])
 		}
 
 		// Stop server from listening (if one is)
+		cout << "Running hdrdma.StpoListening ..." << endl; 
 		hdrdma.StopListening();
+		cout << "hdrdma.StpoListening done" << endl; 
 	}	
 
 	// Connect to remote peer if we are in client mode.
@@ -109,8 +116,12 @@ int main(int narg, char *argv[])
 	// be made available for transfers. If the connection cannot be made 
 	// then it will exit the program with an error message.
 	if( HDRDMA_IS_CLIENT ){
+		cout << "Running hdrdma.Connect ..." << endl; 
 		hdrdma.Connect( HDRDMA_REMOTE_ADDR, HDRDMA_REMOTE_PORT );
+		cout << "hdrdma.Connect done" << endl; 
+		cout << "Running hdrdma.SendFile ..." << endl; 
 		hdrdma.SendFile( HDRDMA_SRCFILENAME, HDRDMA_DSTFILENAME, HDRDMA_DELETE_AFTER_SEND, HDRDMA_CALCULATE_CHECKSUM, HDRDMA_MAKE_PARENT_DIRS );
+		cout << "hdrdma.SendFile done" << endl; 
 	}
 	
 	return 0;
@@ -225,7 +236,7 @@ void Usage(void)
 	cout << "    -c         calculate checksum (adler32 currently only prints) (CMO)" << endl;
 	cout << "    -d         delete source file upon successful transfer (CMO)" << endl;
 	cout << "    -h         print this usage statement." << endl;
-	cout << "    -m  GB     total memory to allocate (def. 8GB for server, 1GB for client)" << endl;
+	cout << "    -m  KB     total memory to allocate (def. 8KB for server, 1KB for client)" << endl;
 	cout << "    -n  Nbuffs number of buffers to break the allocated memory into. This" << endl;
 	cout << "               will determine the size of RDMA transfer requests." << endl;
 	cout << "    -P         make parent directory path on remote host if needed (CMO)" << endl;
