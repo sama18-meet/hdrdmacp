@@ -16,7 +16,7 @@
 
 #include <infiniband/verbs.h>
 
-#include <hdRDMAThread.h>
+#include "hdRDMAThread.h"
 
 
 class hdRDMA{

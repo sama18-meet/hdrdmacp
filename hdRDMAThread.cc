@@ -10,6 +10,7 @@
 #include <zlib.h>
 
 #include "hdRDMA.h"
+#include <memory>
 
 
 using std::cout;

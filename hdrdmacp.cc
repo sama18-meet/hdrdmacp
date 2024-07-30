@@ -2,7 +2,7 @@
 #include <unistd.h>
 
 //#include <infiniband/verbs.h>
-#include <hdRDMA.h>
+#include "hdRDMA.h"
 
 #include <iostream>
 #include <vector>
@@ -23,7 +23,7 @@ std::string HDRDMA_DSTFILENAME = "";
 bool HDRDMA_DELETE_AFTER_SEND  = false;
 bool HDRDMA_CALCULATE_CHECKSUM = false;
 bool HDRDMA_MAKE_PARENT_DIRS   = false;
-uint64_t HDRDMA_BUFF_LEN_GB = 0;       // defaults differ for server and client modes
+uint64_t HDRDMA_BUFF_LEN_KB = 0;       // defaults differ for server and client modes
 uint64_t HDRDMA_NUM_BUFF_SECTIONS = 0; // so these are set in ParseCommandLineArguments
 
 atomic<uint64_t> BYTES_RECEIVED_TOT(0);
@@ -145,7 +145,7 @@ void ParseCommandLineArguments( int narg, char *argv[] )
 		}else if( arg=="-P"){
 			HDRDMA_MAKE_PARENT_DIRS = true;
 		}else if( arg=="-m"){
-			HDRDMA_BUFF_LEN_GB = atoi( next.c_str() );
+			HDRDMA_BUFF_LEN_KB = atoi( next.c_str() );
 			i++;
 		}else if( arg=="-n"){
 			HDRDMA_NUM_BUFF_SECTIONS = atoi( next.c_str() );
@@ -177,14 +177,14 @@ void ParseCommandLineArguments( int narg, char *argv[] )
 		auto pos2 = vfnames[1].find(":", pos+1);
 		if( pos2 == string::npos ){
 			// Set memory region size for client mode. Use default if user didn't specify
-			if( HDRDMA_BUFF_LEN_GB == 0 ) HDRDMA_BUFF_LEN_GB = 1;
+			if( HDRDMA_BUFF_LEN_KB == 0 ) HDRDMA_BUFF_LEN_KB = 1;
 			if( HDRDMA_NUM_BUFF_SECTIONS == 0 ) HDRDMA_NUM_BUFF_SECTIONS = 4;
 
 			// port not specfied in dest string
 			HDRDMA_DSTFILENAME = vfnames[1].substr(pos+1);
 		}else{
 			// Set memory region size for server mode. Use default if user didn't specify
-			if( HDRDMA_BUFF_LEN_GB == 0 ) HDRDMA_BUFF_LEN_GB = 8;
+			if( HDRDMA_BUFF_LEN_KB == 0 ) HDRDMA_BUFF_LEN_KB = 8;
 			if( HDRDMA_NUM_BUFF_SECTIONS == 0 ) HDRDMA_NUM_BUFF_SECTIONS = 32;
 		
 			// port is specfied in dest string

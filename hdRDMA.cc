@@ -1,5 +1,5 @@
 
-#include <hdRDMA.h>
+#include "hdRDMA.h"
 
 #include <unistd.h>
 #include <string.h>
@@ -18,7 +18,7 @@ using std::chrono::duration;
 using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
 
-extern uint64_t HDRDMA_BUFF_LEN_GB;
+extern uint64_t HDRDMA_BUFF_LEN_KB;
 extern uint64_t HDRDMA_NUM_BUFF_SECTIONS;
 
 
@@ -48,7 +48,7 @@ hdRDMA::hdRDMA()
 			case IBV_TRANSPORT_IWARP:
 				transport_type = "IWARP";
 				break;
-			case IBV_EXP_TRANSPORT_SCIF:
+			case IBV_TRANSPORT_USNIC:
 				transport_type = "SCIF";
 				break;
 			default:
@@ -63,7 +63,6 @@ hdRDMA::hdRDMA()
 		// IB network since only connected ones will have lid!=0.
 		// We remember the last device in the list with a non-zero lid
 		// and use that.
-		uint64_t lid = 0;
 
 		// Open device
 		ctx = ibv_open_device(devs[i]);
@@ -75,11 +74,8 @@ hdRDMA::hdRDMA()
 				auto ret = ibv_query_port( ctx, port_num, &my_port_attr);
 				if( ret != 0 ) break;
 				Nports++;
-				if( my_port_attr.lid != 0){
-					lid = my_port_attr.lid;
-					dev = devs[i];
-					this->port_num = port_num;
-				}
+				dev = devs[i];
+				this->port_num = port_num;
 			}
 			ibv_close_device( ctx );
 		}
@@ -93,7 +89,6 @@ hdRDMA::hdRDMA()
 			<< " : Num. ports=" << Nports
 			<< " : port num=" << port_num
 //			<< " : GUID=" << ibv_get_device_guid(devs[i])
-			<< " : lid=" << lid
 			<< endl;
 	}
 	cout << "=============================================" << endl << endl;
@@ -138,9 +133,9 @@ hdRDMA::hdRDMA()
 	// Allocate a large buffer and create a memory region pointing to it.
 	// We will split this one memory region among multiple receive requests
 	// n.b. initial tests failed on transfer for buffers larger than 1GB
-	uint64_t buff_len_GB = HDRDMA_BUFF_LEN_GB;
+	uint64_t buff_len_KB = HDRDMA_BUFF_LEN_KB;
 	num_buff_sections = HDRDMA_NUM_BUFF_SECTIONS;
-	buff_section_len = (buff_len_GB*1000000000)/(uint64_t)num_buff_sections;
+	buff_section_len = (buff_len_KB*1000)/(uint64_t)num_buff_sections;
 	buff_len = num_buff_sections*buff_section_len;
 	buff = new uint8_t[buff_len];
 	if( !buff ){
@@ -162,7 +157,7 @@ hdRDMA::hdRDMA()
 		hdRDMAThread::bufferinfo bi = std::make_tuple( b, buff_section_len );
 		buffer_pool.push_back( bi );
 	}
-	cout << "Created " << buffer_pool.size() << " buffers of " << buff_section_len/1000000 << "MB (" << buff_len/1000000000 << "GB total)" << endl;
+	cout << "Created " << buffer_pool.size() << " buffers of " << buff_section_len << "MB (" << buff_len/1000 << "KB total)" << endl;
 
 	// Create thread to listen for async ibv events
 	new std::thread( [&](){
