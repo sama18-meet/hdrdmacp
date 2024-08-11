@@ -24,8 +24,8 @@ def main():
 
     # Register Memory Region (MR)
     log("Registering Memory Region (MR)...")
-    buffer = bytearray(CHUNK_SIZE)
-    mr = MR(pd, buffer, e.IBV_ACCESS_LOCAL_WRITE)
+    mr = MR(pd, CHUNK_SIZE, e.IBV_ACCESS_LOCAL_WRITE)  # Register the memory region
+
 
     # Create Queue Pair (QP)
     log("Creating Queue Pair (QP)...")
@@ -33,11 +33,16 @@ def main():
     qp_init_attr = QPInitAttr(cap=cap, qp_type=e.IBV_QPT_RC, scq=cq, rcq=cq)
     qp = QP(pd, qp_init_attr)
 
-    # Transition QP to INIT, RTR, and RTS states
-    log("Transitioning QP to INIT, RTR, and RTS states...")
-    qp.to_init()
-    qp.to_rtr()
-    qp.to_rts()
+    # Transition QP to RTR
+    log("Transitioning QP to RTR...")
+    rtr_attr = QPAttr()
+    rtr_attr.qp_state = e.IBV_QPS_RTR
+    rtr_attr.path_mtu = e.IBV_MTU_1024
+    rtr_attr.dest_qp_num = 0  # Set this to the destination QP number
+    rtr_attr.rq_psn = 0
+    rtr_attr.max_dest_rd_atomic = 1
+    rtr_attr.min_rnr_timer = 12
+    qp.to_rtr(rtr_attr)
 
     # Post Receive Work Request
     log("Posting Receive Work Request...")
