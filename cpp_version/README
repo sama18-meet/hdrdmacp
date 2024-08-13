@@ -1,0 +1,5 @@
+to compile:
+
+g++ -o client rdma_context.cpp client.cpp -libverbs -lz
+g++ -o server rdma_context.cpp server.cpp -libverbs -lz
+
