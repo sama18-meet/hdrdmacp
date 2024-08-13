@@ -418,7 +418,7 @@ void rdma_client_context::tcp_connection()
     }
 
     struct sockaddr_in server_addr;
-    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1"); /* server is on same machine */
+    server_addr.sin_addr.s_addr = inet_addr(SERVER_IP); /* server is on same machine */
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(tcp_port);
 

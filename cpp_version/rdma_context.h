@@ -24,8 +24,10 @@
 
 #define MAX_NUM_REQUESTS 10
 
-#define IB_DEVICE_NAME_SERVER ""
-#define IB_DEVICE_NAME_CLIENT ""
+#define IB_DEVICE_NAME_SERVER "mlx5_0"
+#define IB_DEVICE_NAME_CLIENT "mlx5_1"
+#define SERVER_IP "5.5.5.1"
+#define CLIENT_IP "5.5.5.2"
 #define IB_PORT 1
 #define GID_INDEX 3
 
