@@ -168,7 +168,6 @@ void rdma_context::connect_qp(const connection_establishment_data &remote_info)
     qp_attr.rq_psn      = 0 ;
     qp_attr.max_dest_rd_atomic = 16; /* max in-flight RDMA reads */
     qp_attr.min_rnr_timer = 12;
-    qp_attr.ah_attr.is_global = 0; /* No Network Layer (L3) */
     qp_attr.ah_attr.grh.dgid = remote_info.gid; /* GID (L3 address) of the remote side */
     qp_attr.ah_attr.grh.sgid_index = GID_ID;
     qp_attr.ah_attr.grh.hop_limit = 1;
