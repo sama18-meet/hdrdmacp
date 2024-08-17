@@ -291,11 +291,11 @@ rdma_server_context::rdma_server_context(uint16_t tcp_port) :
     /* Receive RDMA parameters with the client */
     connection_establishment_data client_info = recv_connection_establishment_data();
 
-    /* now need to connect the QP to the client's QP. */
-    connect_qp(client_info);
-
     /* Send RDMA parameters to the client */
     send_connection_establishment_data();
+
+    /* now need to connect the QP to the client's QP. */
+    connect_qp(client_info);
 }
 
 rdma_server_context::~rdma_server_context()
