@@ -166,7 +166,7 @@ void rdma_context::connect_qp(const connection_establishment_data &remote_info)
     qp_attr.path_mtu = IBV_MTU_1024;
     qp_attr.dest_qp_num = remote_info.qpn; /* qp number of the remote side */
     qp_attr.rq_psn      = 0 ;
-    qp_attr.max_dest_rd_atomic = 16; /* max in-flight RDMA reads */
+    qp_attr.max_dest_rd_atomic = 1; /* max in-flight RDMA reads */
     qp_attr.min_rnr_timer = 12;
     qp_attr.ah_attr.grh.dgid = remote_info.gid; /* GID (L3 address) of the remote side */
     qp_attr.ah_attr.grh.sgid_index = GID_ID;
