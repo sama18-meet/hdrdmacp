@@ -50,7 +50,7 @@ void rdma_context::initialize_verbs(const char *device_name)
         exit(1);
     }
 
-    /* allocate a memory region for the RPC requests. */
+    /* allocate a memory region for the file requests. */
     mr_requests = ibv_reg_mr(pd, requests.begin(), sizeof(file_request) * MAX_NUM_REQUESTS, IBV_ACCESS_LOCAL_WRITE);
     if (!mr_requests) {
         perror("ibv_reg_mr() failed for requests");
@@ -109,7 +109,7 @@ void rdma_context::send_connection_establishment_data()
     int ret;
 
     /* For RoCE, GID (IP address) must by used */
-    ret = ibv_query_gid(context, IB_PORT, GID_INDEX, &my_info.gid);
+    ret = ibv_query_gid(context, IB_PORT, GID_ID, &my_info.gid);
     if (ret) {
         perror("ibv_query_gid() failed");
         exit(1);
@@ -170,7 +170,7 @@ void rdma_context::connect_qp(const connection_establishment_data &remote_info)
     qp_attr.min_rnr_timer = 12;
     qp_attr.ah_attr.is_global = 0; /* No Network Layer (L3) */
     qp_attr.ah_attr.grh.dgid = remote_info.gid; /* GID (L3 address) of the remote side */
-    qp_attr.ah_attr.grh.sgid_index = GID_INDEX;
+    qp_attr.ah_attr.grh.sgid_index = GID_ID;
     qp_attr.ah_attr.grh.hop_limit = 1;
     qp_attr.ah_attr.is_global = 1;
     qp_attr.ah_attr.sl = 0;
@@ -409,7 +409,7 @@ void rdma_client_context::tcp_connection()
     }
 
     struct sockaddr_in server_addr;
-    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1"); /* server is on same machine */
+    server_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(tcp_port);
 

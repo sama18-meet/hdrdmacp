@@ -22,13 +22,8 @@
 #include <cassert>
 
 
-#define MAX_NUM_REQUESTS 10
 
-#define IB_DEVICE_NAME_SERVER ""
-#define IB_DEVICE_NAME_CLIENT ""
-#define IB_PORT 1
-#define GID_INDEX 3
-
+#include "settings.h"
 
 
 
