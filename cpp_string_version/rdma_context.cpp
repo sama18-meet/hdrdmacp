@@ -443,6 +443,8 @@ bool rdma_client_context::send_file(int file_id, char *file, long size)  {
 
     send_over_socket(&req, sizeof(file_request));
 
+    print_file_request(&req);
+
     printf("send_file...\n");
     return true;
 
