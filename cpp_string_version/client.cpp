@@ -39,18 +39,22 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    int fd = open(filename, O_RDONLY, S_IRUSR|S_IWUSR);
+
+    /*
+    int fd = open(filename, O_RDONLY);
     struct stat sb;
     if (fstat(fd, &sb) == -1) {
         perror("couldn't get file size\n");
     }
     printf("file size is %ld\n", sb.st_size);
 
+    char* mmaped_file = (char*)mmap(NULL, sb.st_size+1, PROT_READ, MAP_PRIVATE, fd, 0);
+    printf("mmaped_file addr: %p, size=%ld, content=%s.\n", mmaped_file, sb.st_size, mmaped_file);
+
+    */
+
     auto client = std::make_unique<rdma_client_context>(tcp_port);
-
-    char* mmaped_file = (char*)mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-
-    bool file_sent = client->send_file(1, mmaped_file, sb.st_size);
+    bool file_sent = client->send_file(1, filename);
 
     return 0;
 }

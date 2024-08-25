@@ -2,7 +2,7 @@
 
 
 void print_file_request(file_request* req) {
-    printf("file request:\n\trequest_id=%d, rkey=%d, length=%d, addr=%ld\n", req->request_id, req->rkey, req->length, req->addr);
+    printf("file request:\n\trequest_id=%d, rkey=%d, length=%d, addr=%p\n", req->request_id, req->rkey, req->length, (void*)req->addr);
 }
 
 rdma_context::rdma_context(uint16_t tcp_port) : tcp_port(tcp_port) {}
@@ -363,9 +363,9 @@ void rdma_server_context::receive_file()  {
     print_file_request(req);
 
     /* register a memory region for the input / output images. */
-    mr_file = ibv_reg_mr(pd, file, req->length, IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_WRITE);
+    mr_file = ibv_reg_mr(pd, file, req->length, IBV_ACCESS_REMOTE_READ| IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_WRITE);
     if (!mr_file) {
-        perror("ibv_reg_mr() failed for file");
+        perror("ibv_reg_mr() in server failed for file");
         exit(1);
     }
 
@@ -428,18 +428,40 @@ void rdma_client_context::tcp_connection()
 }
 
 
-bool rdma_client_context::send_file(int file_id, char *file, long size)  {
-    struct ibv_mr *mr_file = ibv_reg_mr(pd, file, size, IBV_ACCESS_REMOTE_READ);
+bool rdma_client_context::send_file(int file_id, char *filename)  {
+
+
+    char * buffer = 0;
+    long length;
+    FILE * f = fopen (filename, "rb");
+
+    if (f)
+    {
+      fseek (f, 0, SEEK_END);
+      length = ftell (f);
+      fseek (f, 0, SEEK_SET);
+      int res = posix_memalign((void**)&buffer, 4096, length);
+      if (buffer)
+      {
+        fread (buffer, 1, length, f);
+      }
+      fclose (f);
+    }
+    printf("before reg. buf content: %s\n", buffer);
+    struct ibv_mr *mr_file = ibv_reg_mr(pd, buffer, length, IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_LOCAL_WRITE);
     if (!mr_file) {
-        perror("ibv_reg_mr() failed for file");
+        perror("ibv_reg_mr() in client failed for file");
         exit(1);
     }
+    printf("after reg. buf content: %s\n", buffer);
+    buffer[2] = 'L';
+    printf("after change. buf content: %s\n", buffer);
 
     struct file_request req;
     req.request_id = 1;
     req.rkey = mr_file->rkey;
-    req.length = size;
-    req.addr = (uint64_t) file;
+    req.length = length;
+    req.addr = (uint64_t) buffer;
 
     send_over_socket(&req, sizeof(file_request));
 
