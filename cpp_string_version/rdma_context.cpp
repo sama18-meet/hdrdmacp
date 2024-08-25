@@ -1,6 +1,10 @@
 #include "rdma_context.h"
 
 
+void print_file_request(file_request* req) {
+    printf("file request:\n\trequest_id=%d, rkey=%d, length=%d, addr=%ld\n", req->request_id, req->rkey, req->length, req->addr);
+}
+
 rdma_context::rdma_context(uint16_t tcp_port) : tcp_port(tcp_port) {}
 
 rdma_context::~rdma_context()
@@ -355,6 +359,8 @@ void rdma_server_context::receive_file()  {
     recv_over_socket(req, sizeof(file_request));
 
     file = (char*) malloc(req->length+1);
+
+    print_file_request(req);
 
     /* register a memory region for the input / output images. */
     mr_file = ibv_reg_mr(pd, file, req->length, IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_WRITE);
