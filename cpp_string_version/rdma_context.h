@@ -110,7 +110,7 @@ public:
 
     ~rdma_client_context();
 
-    bool send_file(int file_id, char *file);
+    bool send_file(int file_id, char *file, long size);
 
 protected:
     void tcp_connection();

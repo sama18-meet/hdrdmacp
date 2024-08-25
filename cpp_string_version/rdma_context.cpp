@@ -422,8 +422,8 @@ void rdma_client_context::tcp_connection()
 }
 
 
-bool rdma_client_context::send_file(int file_id, char *file)  {
-    struct ibv_mr *mr_file = ibv_reg_mr(pd, file, 1000, IBV_ACCESS_REMOTE_READ);
+bool rdma_client_context::send_file(int file_id, char *file, long size)  {
+    struct ibv_mr *mr_file = ibv_reg_mr(pd, file, size, IBV_ACCESS_REMOTE_READ);
     if (!mr_file) {
         perror("ibv_reg_mr() failed for file");
         exit(1);
@@ -432,7 +432,7 @@ bool rdma_client_context::send_file(int file_id, char *file)  {
     struct file_request req;
     req.request_id = 1;
     req.rkey = mr_file->rkey;
-    req.length = 1000;
+    req.length = size;
     req.addr = (uint64_t) file;
 
     send_over_socket(&req, sizeof(file_request));
