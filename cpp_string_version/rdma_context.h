@@ -75,6 +75,7 @@ protected:
     void post_rdma_write(uint64_t remote_dst, uint32_t len, uint32_t rkey,
 			 void *local_src, uint32_t lkey, uint64_t wr_id,
 			 uint32_t *immediate = NULL);
+    bool poll_cq();
 
 public:
     explicit rdma_context(uint16_t tcp_port);

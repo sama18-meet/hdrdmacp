@@ -282,6 +282,26 @@ void rdma_context::post_rdma_write(uint64_t remote_dst, uint32_t len, uint32_t r
     }
 }
 
+bool rdma_context::poll_cq() {
+    struct ibv_wc wc;
+    int num_completions;
+
+    // Poll the CQ until an event is received
+    while ((num_completions = ibv_poll_cq(cq, 1, &wc)) == 0);
+
+    if (num_completions < 0) {
+        perror("Error polling CQ");
+    }
+
+    if (wc.status == IBV_WC_SUCCESS) {
+        printf("RDMA Read completed successfully!\n");
+        return true;
+    } else {
+        fprintf(stderr, "RDMA Read failed: %d\n", wc.status);
+        return false;
+    }
+}
+
 rdma_server_context::rdma_server_context(uint16_t tcp_port) :
     rdma_context(tcp_port)
 {
@@ -376,8 +396,15 @@ void rdma_server_context::receive_file()  {
         req->addr,    // remote_dst
         req->rkey,    // rkey
         1);          // wr_id
-
-    printf("rcv file...\n");
+    
+    bool done = poll_cq();
+    if (done) {
+        printf("received file successfully...\n");
+    }
+    else {
+        perror("error receiving file\n");
+    }
+    send_over_socket(&done, sizeof(bool));
 }
 
 
@@ -447,15 +474,12 @@ bool rdma_client_context::send_file(int file_id, char *filename)  {
       }
       fclose (f);
     }
-    printf("before reg. buf content: %s\n", buffer);
     struct ibv_mr *mr_file = ibv_reg_mr(pd, buffer, length, IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_LOCAL_WRITE);
     if (!mr_file) {
         perror("ibv_reg_mr() in client failed for file");
         exit(1);
     }
-    printf("after reg. buf content: %s\n", buffer);
-    buffer[2] = 'L';
-    printf("after change. buf content: %s\n", buffer);
+    printf("buf content that will be sent: %s\n", buffer);
 
     struct file_request req;
     req.request_id = 1;
@@ -467,7 +491,16 @@ bool rdma_client_context::send_file(int file_id, char *filename)  {
 
     print_file_request(&req);
 
-    printf("send_file...\n");
+    bool done = false;
+
+    recv_over_socket(&done, sizeof(bool));
+
+    if (done) {
+        printf("sent file successfully...\n");
+    }
+    else {
+        perror("error sending file\n");
+    }
     return true;
 
 }
