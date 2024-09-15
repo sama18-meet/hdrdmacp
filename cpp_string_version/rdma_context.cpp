@@ -399,10 +399,10 @@ void rdma_server_context::receive_file()  {
     
     bool done = poll_cq();
     if (done) {
-        printf("received file successfully...\n");
+        printf("server: poll_cq returned true\n");
     }
     else {
-        perror("error receiving file\n");
+        perror("server: poll_cq returned false\n");
     }
     send_over_socket(&done, sizeof(bool));
 }
@@ -496,10 +496,10 @@ bool rdma_client_context::send_file(int file_id, char *filename)  {
     recv_over_socket(&done, sizeof(bool));
 
     if (done) {
-        printf("sent file successfully...\n");
+        printf("client: server poll_cq failed\n");
     }
     else {
-        perror("error sending file\n");
+        perror("client: server poll_cq succeeded\n");
     }
     return true;
 
