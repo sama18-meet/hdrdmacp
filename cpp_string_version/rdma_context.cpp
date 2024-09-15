@@ -309,7 +309,7 @@ rdma_server_context::rdma_server_context(uint16_t tcp_port) :
     tcp_connection();
 
     /* Open up some InfiniBand resources */
-    initialize_verbs(IB_DEVICE_NAME_SERVER);
+    initialize_verbs(IB_DEVICE_NAME);
 
     /* Receive RDMA parameters with the client */
     connection_establishment_data client_info = recv_connection_establishment_data();
@@ -415,7 +415,7 @@ rdma_client_context::rdma_client_context(uint16_t tcp_port) :
     tcp_connection();
 
     /* Open up some InfiniBand resources */
-    initialize_verbs(IB_DEVICE_NAME_CLIENT);
+    initialize_verbs(IB_DEVICE_NAME);
 
     /* exchange InfiniBand parameters with the client */
     send_connection_establishment_data();
@@ -441,7 +441,7 @@ void rdma_client_context::tcp_connection()
     }
 
     struct sockaddr_in server_addr;
-    server_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
+    server_addr.sin_addr.s_addr = inet_addr(IP);
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(tcp_port);
 
